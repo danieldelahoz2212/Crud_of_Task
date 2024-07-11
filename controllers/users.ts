@@ -1,5 +1,9 @@
-import { Request, Response } from "express"
-import Users from "../models/user"
+import { Request, Response } from "express";
+import { keys } from "../config/config";
+import { validationResult } from "express-validator";
+import Users from "../models/user";
+import Sessions from "../models/session";
+import jwt from 'jsonwebtoken';
 
 export const getUsers = async (req: Request, res: Response) => {
 
@@ -10,45 +14,100 @@ export const getUsers = async (req: Request, res: Response) => {
 
 export const getUser = async (req: Request, res: Response) => {
     try {
-        const {id}  = req.params;
+        const { id } = req.params;
         const user = await Users.findByPk(id);
 
-        if(user){
-            res.json({user});
-        }else{
-            res.status(404).json({message: `No existe un usuario con el id ${id}` })
+        if (user) {
+            res.json({ user });
+        } else {
+            res.status(404).json({ message: `No existe un usuario con el id ${id}` })
         }
     } catch (error) {
         console.error(error);
     }
 };
 
-export const postUser = (req: Request, res: Response) => {
+export const postUser = async (req: Request, res: Response) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json(errors);
+        }
 
-    const { body } = req;
+        const { name, lastName, email, password, rol } = req.body;
 
-    res.json({
-        msg: 'postUser',
-        body
-    })
+        if (!name || !lastName || !email || !password || !rol) {
+            return res.status(400).json({ message: 'Datos de usuario incompletos' });
+        }
+
+        const existeEmail = await Users.findOne({ where: { email } });
+        if (existeEmail) {
+            return res.status(400).json({ message: 'Este correo ya está registrado' });
+        }
+
+        const user = await Users.create({ name, lastName, email, password, rol, status: 1 });
+
+        const token = jwt.sign({ Id: user.getDataValue('id') }, keys.key);
+
+        await Sessions.create({ token, idUsers: user.getDataValue('id') })
+
+        res.json({
+            message: 'Usuario creado con éxito',
+            user,
+            token
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error del servidor' });
+    }
+};
+
+export const patchUser = async (req: Request, res: Response) => {
+    try {
+
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json(errors);
+        }
+
+        const { id } = req.params;
+        const { name, lastName, email, password, rol } = req.body;
+
+        if (!name || !lastName || !email || !password || !rol) {
+            return res.status(400).json({ message: 'Datos de usuario incompletos' });
+        }
+
+        const user = await Users.findByPk(id);
+        if (!user) {
+            return res.status(400).json({ message: 'No existe un usuario con el id ' + id });
+        }
+
+        await user.update({ name, lastName, email, password, rol });
+
+        res.json({
+            message: 'Usuario Actualizado con éxito',
+            user
+        })
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error del servidor' });
+    }
 }
 
-export const patchUser = (req: Request, res: Response) => {
-    const { id } = req.params;
-    const { body } = req;
-
-    res.json({
-        msg: 'patchUser',
-        body,
-        id
-    })
-}
-
-export const deleteUser = (req: Request, res: Response) => {
+export const deleteUser = async (req: Request, res: Response) => {
     const { id } = req.params;
 
+    const user = await Users.findByPk(id);
+
+    if (!user) {
+        return res.status(400).json({ message: 'No existe un usuario con el id ' + id });
+    }
+
+    await user.update({ status: false });
+
     res.json({
-        msg: 'deleteUser',
-        id
+        message: 'El Usuario fue eliminado con éxito',
+        user
     })
 }
