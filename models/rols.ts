@@ -14,3 +14,5 @@ const Rols = db.define('rols', {
 }, {
     timestamps: false
   });
+
+  export default Rols;

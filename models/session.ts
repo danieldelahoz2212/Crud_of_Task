@@ -14,7 +14,12 @@ const Sessions = db.define('sessions', {
     token: {
         type: DataTypes.STRING,
         allowNull: false
-    }
+    },
+    status: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: true
+      }
 }, {
     timestamps: false
 });

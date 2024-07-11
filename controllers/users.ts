@@ -24,6 +24,7 @@ export const getUser = async (req: Request, res: Response) => {
         }
     } catch (error) {
         console.error(error);
+        res.status(500).json({ message: `Error del servidor ${error}` });
     }
 };
 
@@ -36,10 +37,6 @@ export const postUser = async (req: Request, res: Response) => {
 
         const { name, lastName, email, password, rol } = req.body;
 
-        if (!name || !lastName || !email || !password || !rol) {
-            return res.status(400).json({ message: 'Datos de usuario incompletos' });
-        }
-
         const existeEmail = await Users.findOne({ where: { email } });
         if (existeEmail) {
             return res.status(400).json({ message: 'Este correo ya está registrado' });
@@ -47,7 +44,7 @@ export const postUser = async (req: Request, res: Response) => {
 
         const user = await Users.create({ name, lastName, email, password, rol, status: 1 });
 
-        const token = jwt.sign({ Id: user.getDataValue('id') }, keys.key);
+        const token = jwt.sign({ Id: user.getDataValue('id'), rol: user.getDataValue('rol') }, keys.key);
 
         await Sessions.create({ token, idUsers: user.getDataValue('id') })
 
@@ -59,7 +56,7 @@ export const postUser = async (req: Request, res: Response) => {
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Error del servidor' });
+        res.status(500).json({ message: `Error del servidor ${error}` });
     }
 };
 
