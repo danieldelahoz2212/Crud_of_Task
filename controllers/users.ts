@@ -1,8 +1,7 @@
 import { Request, Response } from "express";
-import { keys } from "../config/config";
 import { validationResult } from "express-validator";
-import Users from "../models/user";
-import Sessions from "../models/session";
+import Users from "../models/users";
+import Sessions from "../models/sessions";
 import jwt from 'jsonwebtoken';
 
 export const getUsers = async (req: Request, res: Response) => {
@@ -30,6 +29,7 @@ export const getUser = async (req: Request, res: Response) => {
 
 export const postUser = async (req: Request, res: Response) => {
     try {
+
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json(errors);
@@ -37,14 +37,14 @@ export const postUser = async (req: Request, res: Response) => {
 
         const { name, lastName, email, password, rol } = req.body;
 
-        const existeEmail = await Users.findOne({ where: { email } });
+        const existeEmail = await Users.findOne({ where: {email } });
         if (existeEmail) {
             return res.status(400).json({ message: 'Este correo ya está registrado' });
         }
 
         const user = await Users.create({ name, lastName, email, password, rol, status: 1 });
 
-        const token = jwt.sign({ Id: user.getDataValue('id'), rol: user.getDataValue('rol') }, keys.key);
+        const token = jwt.sign({ Id: user.getDataValue('id'), rol: user.getDataValue('rol') }, process.env.JWT_SECRET as string);
 
         await Sessions.create({ token, idUsers: user.getDataValue('id') })
 
@@ -70,10 +70,6 @@ export const patchUser = async (req: Request, res: Response) => {
 
         const { id } = req.params;
         const { name, lastName, email, password, rol } = req.body;
-
-        if (!name || !lastName || !email || !password || !rol) {
-            return res.status(400).json({ message: 'Datos de usuario incompletos' });
-        }
 
         const user = await Users.findByPk(id);
         if (!user) {

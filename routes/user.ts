@@ -9,19 +9,19 @@ const router = Router();
 //user
 router.get('/',
     [
-        verifyToken(['admin']),
+        // verifyToken(['admin']),
     ],
     getUsers);
 
 router.get('/:id',
     [
-        verifyToken(['admin']),
+        // verifyToken(['admin']),
     ],
     getUser);
 
 router.post('/',
     [
-
+        // verifyToken(['admin']),
         check('name', 'El nombre es obligatorio').notEmpty(),
         check('lastName', 'El apellido es obligatorio').notEmpty(),
         check('email', 'El email no es válido').isEmail(),
@@ -35,7 +35,7 @@ router.post('/',
 
 router.patch('/:id',
     [
-        verifyToken(['admin']),
+        // verifyToken(['admin']),
         check('idAuth', 'no sea encontrado usuario').isEmpty(),
         check('name', 'El nombre es obligatorio').notEmpty(),
         check('lastName', 'El apellido es obligatorio').notEmpty(),
@@ -49,7 +49,7 @@ router.patch('/:id',
 
 router.delete('/:id',
     [
-        verifyToken(['admin']),
+        // verifyToken(['admin']),
     ],
     deleteUser);
 
