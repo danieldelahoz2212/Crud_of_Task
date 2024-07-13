@@ -30,7 +30,8 @@ const Users = db.define('users', {
   },
   status: {
     type: DataTypes.INTEGER,
-    allowNull: false
+    allowNull: false,
+    defaultValue: true
   }
 }, {
   timestamps: false

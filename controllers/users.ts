@@ -42,7 +42,7 @@ export const postUser = async (req: Request, res: Response) => {
             return res.status(400).json({ message: 'Este correo ya está registrado' });
         }
 
-        const user = await Users.create({ name, lastName, email, password, rol, status: 1 });
+        const user = await Users.create({ name, lastName, email, password, rol});
 
         const token = jwt.sign({ Id: user.getDataValue('id'), rol: user.getDataValue('rol') }, process.env.JWT_SECRET as string);
 
@@ -84,7 +84,7 @@ export const patchUser = async (req: Request, res: Response) => {
         })
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Error del servidor' });
+        res.status(500).json({ message: `Error del servidor ${error}`});
     }
 }
 
@@ -94,7 +94,7 @@ export const deleteUser = async (req: Request, res: Response) => {
     const user = await Users.findByPk(id);
 
     if (!user) {
-        return res.status(400).json({ message: 'No existe un usuario con el id ' + id });
+        return res.status(400).json({ message: `No existe un usuario con el id: ${id}` });
     }
 
     await user.update({ status: false });

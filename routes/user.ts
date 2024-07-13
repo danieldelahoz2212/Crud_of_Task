@@ -6,7 +6,6 @@ import verifyToken from "../middleware/verifyToken";
 
 const router = Router();
 
-//user
 router.get('/',
     [
         // verifyToken(['admin']),

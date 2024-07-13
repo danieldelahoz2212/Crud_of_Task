@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import Sessions from '../models/sessions';
-import { keys } from '../config/config';
 import Rols from '../models/rols';
 
 const verifyToken = (rols: string[]) => async (req: Request, res: Response, next: NextFunction) => {
@@ -25,8 +24,8 @@ const verifyToken = (rols: string[]) => async (req: Request, res: Response, next
                 return res.status(401).json({ message: 'Token no válido' });
             }
 
-            req.body = decoded as JwtPayload;
-
+            req.body.decoded = decoded as JwtPayload;
+//
             const rol = await Rols.findByPk(req.body.rol);
             if (!rol) {
                 return res.status(403).json({ message: 'Rol no encontrado' });
