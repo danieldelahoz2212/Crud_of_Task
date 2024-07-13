@@ -37,12 +37,12 @@ export const postUser = async (req: Request, res: Response) => {
 
         const { name, lastName, email, password, rol } = req.body;
 
-        const existeEmail = await Users.findOne({ where: {email } });
+        const existeEmail = await Users.findOne({ where: { email } });
         if (existeEmail) {
             return res.status(400).json({ message: 'Este correo ya está registrado' });
         }
 
-        const user = await Users.create({ name, lastName, email, password, rol});
+        const user = await Users.create({ name, lastName, email, password, rol });
 
         const token = jwt.sign({ Id: user.getDataValue('id'), rol: user.getDataValue('rol') }, process.env.JWT_SECRET as string);
 
@@ -72,9 +72,16 @@ export const patchUser = async (req: Request, res: Response) => {
         const { name, lastName, email, password, rol } = req.body;
 
         const user = await Users.findByPk(id);
+
         if (!user) {
             return res.status(400).json({ message: 'No existe un usuario con el id ' + id });
         }
+
+        const session = await Sessions.findOne({ where: { idUsers: user.getDataValue('id') } });
+
+        const token = jwt.sign({ Id: user.getDataValue('id'), rol: user.getDataValue('rol') }, process.env.JWT_SECRET as string);
+
+        await session?.update({ token });
 
         await user.update({ name, lastName, email, password, rol });
 
@@ -84,7 +91,7 @@ export const patchUser = async (req: Request, res: Response) => {
         })
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: `Error del servidor ${error}`});
+        res.status(500).json({ message: `Error del servidor ${error}` });
     }
 }
 

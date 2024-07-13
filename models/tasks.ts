@@ -23,6 +23,10 @@ const Tasks = db.define('tasks',{
         type: DataTypes.INTEGER,
         allowNull: false,
     },
+    idStatus:{
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
     status: {
         type: DataTypes.INTEGER,
         allowNull: false,

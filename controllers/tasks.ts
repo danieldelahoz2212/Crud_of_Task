@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import Tasks from "../models/tasks";
 import Users from "../models/users";
+import Rols from "../models/rols";
 
 export const getTasks = async (req: Request, res: Response) => {
 
@@ -26,12 +27,12 @@ export const postTask = async (req: Request, res: Response) => {
             return res.status(400).json(errors);
         }
 
-        const { title, description, category, idUser } = req.body
+        const { title, description, category, idUser, idStatus } = req.body
         const user = await Users.findByPk(idUser);
         if (!user) {
             return res.status(400).json({ messege: `el usuario con el id: ${idUser} no existe` })
         }
-        const task = await Tasks.create({ title, description, category, idUser });
+        const task = await Tasks.create({ title, description, category, idUser, idStatus });
 
         res.json({
             message: 'Tarea creada con éxito',
@@ -52,14 +53,24 @@ export const patchTask = async (req: Request, res: Response) => {
         }
 
         const { id } = req.params;
-        const { title, description, category, idUser } = req.body;
+        const { title, description, category, idUser, idStatus } = req.body;
 
         const task = await Tasks.findByPk(id);
         if (!task) {
             return res.status(400).json({ message: 'La tarea no existe' });
         }
 
-        await task.update({ title, description, category, idUser });
+        const user = await Users.findByPk(idUser);
+        if (!user) {
+            return res.status(400).json({ message: `el usuario con el id: ${idUser} no existe`})
+        }
+
+        const rols = await Rols.findByPk(user.getDataValue('rol'));
+        if (rols?.getDataValue('rol') == 'admin') {
+            await task.update({ title, description, category, idUser, idStatus });
+        }else{
+            await task.update({ idStatus });
+        }
 
         res.json({
             message: 'Tarea creada con éxito',
@@ -71,6 +82,34 @@ export const patchTask = async (req: Request, res: Response) => {
         res.status(500).json({ message: `Error del servidor ${error}` });
     }
 }
+
+// export const patchTaskStatus = async (req: Request, res: Response) => {
+//     try {
+//         const errors = validationResult(req);
+//         if (!errors.isEmpty()) {
+//             return res.status(400).json(errors);
+//         }
+
+//         const { id } = req.params;
+//         const { idStatus } = req.body;
+
+//         const task = await Tasks.findByPk(id);
+//         if (!task) {
+//             return res.status(400).json({ message: 'La tarea no existe' });
+//         }
+
+//         await task.update({ idStatus });
+
+//         res.json({
+//             message: 'Tarea creada con éxito',
+//             task
+//         })
+
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ message: `Error del servidor ${error}` });
+//     }
+// }
 
 export const deleteTask = async (req: Request, res: Response) => {
     const { id } = req.params;

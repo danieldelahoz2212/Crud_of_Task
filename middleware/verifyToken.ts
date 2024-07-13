@@ -5,28 +5,22 @@ import Rols from '../models/rols';
 
 const verifyToken = (rols: string[]) => async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const idUsers = req.body['idAuth'];
+        const token = req.headers.authorization?.split(' ').pop();
 
-        if (!idUsers) {
-            return res.status(403).json({ message: 'No se ha digitado ningún ID' });
-        }
-
-        const getToken = await Sessions.findOne({ where: { idUsers, status: 1 } });
+        const getToken = await Sessions.findOne({ where: { token, status: 1 } });
 
         if (!getToken) {
             return res.status(401).json({ message: 'Token no válido' });
-        }
+        } 
 
-        const token = getToken.getDataValue('token');
-
-        jwt.verify(token, process.env.JWT_SECRET as string, async (err: any, decoded: any) => {
+        jwt.verify( getToken.getDataValue('token'), process.env.JWT_SECRET as string, async (err: any, decoded: any) => {
             if (err) {
                 return res.status(401).json({ message: 'Token no válido' });
             }
 
             req.body.decoded = decoded as JwtPayload;
-//
-            const rol = await Rols.findByPk(req.body.rol);
+
+            const rol = await Rols.findByPk(req.body.decoded.rol);
             if (!rol) {
                 return res.status(403).json({ message: 'Rol no encontrado' });
             }
