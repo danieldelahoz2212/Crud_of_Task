@@ -3,6 +3,7 @@ import { validationResult } from "express-validator";
 import Tasks from "../models/tasks";
 import Users from "../models/users";
 import Rols from "../models/rols";
+import Status from "../models/Status";
 
 export const getTasks = async (req: Request, res: Response) => {
 
@@ -12,12 +13,19 @@ export const getTasks = async (req: Request, res: Response) => {
 }
 
 export const getTask = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
 
-    const { id } = req.params;
+        const task = await Tasks.findByPk(id);
+        if (task) {
+            res.json({ task });
+        }else{
+            res.status(404).json({ msg: `No existe un tarea con el id ${id}` });
+        }
 
-    const task = await Tasks.findByPk(id);
-
-    res.json({ task });
+    } catch (error) {
+        console.error(error);
+    }
 }
 
 export const postTask = async (req: Request, res: Response) => {
@@ -62,13 +70,13 @@ export const patchTask = async (req: Request, res: Response) => {
 
         const user = await Users.findByPk(idUser);
         if (!user) {
-            return res.status(400).json({ message: `el usuario con el id: ${idUser} no existe`})
+            return res.status(400).json({ message: `el usuario con el id: ${idUser} no existe` });
         }
 
         const rols = await Rols.findByPk(user.getDataValue('rol'));
         if (rols?.getDataValue('rol') == 'admin') {
             await task.update({ title, description, category, idUser, idStatus });
-        }else{
+        } else {
             await task.update({ idStatus });
         }
 
@@ -79,7 +87,6 @@ export const patchTask = async (req: Request, res: Response) => {
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: `Error del servidor ${error}` });
     }
 }
 
@@ -116,11 +123,11 @@ export const deleteTask = async (req: Request, res: Response) => {
 
     const task = await Tasks.findByPk(id);
 
-    if(!task){
-        return res.status(400).json({message: 'La tarea no existe' })
+    if (!task) {
+        return res.status(400).json({ message: 'La tarea no existe' })
     }
 
-    await task.update({status:false});
+    await task.update({ status: false });
 
     res.json({
         message: 'Tarea eliminar con éxito',

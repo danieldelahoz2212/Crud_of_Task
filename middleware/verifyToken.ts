@@ -5,15 +5,19 @@ import Rols from '../models/rols';
 
 const verifyToken = (rols: string[]) => async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const token = req.headers.authorization?.split(' ').pop();
+        const token = req.headers["token"];
+
+        if (!token) {
+            return res.status(401).json({ message: "No se ha enviado el token" })
+        }
 
         const getToken = await Sessions.findOne({ where: { token, status: 1 } });
 
         if (!getToken) {
             return res.status(401).json({ message: 'Token no válido' });
-        } 
+        }
 
-        jwt.verify( getToken.getDataValue('token'), process.env.JWT_SECRET as string, async (err: any, decoded: any) => {
+        jwt.verify(token as string, process.env.JWT_SECRET as string, async (err: any, decoded: any) => {
             if (err) {
                 return res.status(401).json({ message: 'Token no válido' });
             }
@@ -25,11 +29,12 @@ const verifyToken = (rols: string[]) => async (req: Request, res: Response, next
                 return res.status(403).json({ message: 'Rol no encontrado' });
             }
 
-            if (rols.includes(rol.getDataValue('rol'))) {
-                next();
-            } else {
+            if (!rols.includes(rol.getDataValue('rol'))) {
                 return res.status(403).json({ message: 'No tiene permisos para realizar esta acción' });
             }
+
+            next();
+
         });
     } catch (err) {
         return res.status(500).json({ message: `Error en el servidor: ${(err as Error).message}` });

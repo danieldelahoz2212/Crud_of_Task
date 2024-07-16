@@ -9,7 +9,7 @@ export const getUsers = async (req: Request, res: Response) => {
     const users = await Users.findAll();
 
     res.json({ users })
-}
+};
 
 export const getUser = async (req: Request, res: Response) => {
     try {
@@ -23,7 +23,6 @@ export const getUser = async (req: Request, res: Response) => {
         }
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: `Error del servidor ${error}` });
     }
 };
 
@@ -93,7 +92,7 @@ export const patchUser = async (req: Request, res: Response) => {
         console.error(error);
         res.status(500).json({ message: `Error del servidor ${error}` });
     }
-}
+};
 
 export const deleteUser = async (req: Request, res: Response) => {
     const { id } = req.params;
@@ -110,4 +109,38 @@ export const deleteUser = async (req: Request, res: Response) => {
         message: 'El Usuario fue eliminado con éxito',
         user
     })
-}
+};
+
+export const login = async (req: Request, res: Response) => {
+    try {
+
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json(errors);
+        }
+
+        const { email, password } = req.body;
+
+        const user = await Users.findOne({ where: { email, password } });
+
+        if (!user) {
+            return res.status(400).json({ message: 'Usuario o contraseña incorrectos' });
+        }
+
+        const session = await Sessions.findOne({where:{idUsers: user?.getDataValue('id')}});
+
+        if(!session){
+            return res.status(400).json({ message: 'no se encontro el token' });
+        }
+
+        res.json({
+            message: 'Usuario logueado con éxito',
+            user,
+            token: session.getDataValue( 'token' )
+
+        })
+
+    } catch (error) {
+        console.error(error);
+    }
+};

@@ -28,8 +28,6 @@ router.post('/',
 router.patch('/:id',
     [
         verifyToken(['admin']),
-        check('name', 'El nombre de la categoria es obligatorio').notEmpty(),
-        check('description', 'La descripcion de la categoria es obligatoria').notEmpty()
     ],
     patchCategory);
 

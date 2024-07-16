@@ -10,11 +10,20 @@ export const getCategorys = async (req: Request, res: Response) => {
 }
 
 export const getCategory = async (req: Request, res: Response) => {
-    const { id } = req.params;
+    try {
+        const { id } = req.params;
 
-    const category = await Categorys.findByPk(id);
+        const category = await Categorys.findByPk(id);
 
-    res.json({ category });
+        if (category) {
+            res.json(category);
+        } else {
+            res.status(404).json({ msg: `No existe una categoria con el id ${id}` });
+        }
+        
+    } catch (error) {
+        console.error(error);
+    }
 }
 
 export const postCategory = async (req: Request, res: Response) => {
@@ -57,8 +66,8 @@ export const patchCategory = async (req: Request, res: Response) => {
         const { name, description } = req.body;
 
         const category = await Categorys.findByPk(id);
-        if(!category){
-            return res.status(400).json({message: 'La categoria no existe'});
+        if (!category) {
+            return res.status(400).json({ message: 'La categoria no existe' });
         }
 
         await category.update({ name, description });
@@ -67,9 +76,9 @@ export const patchCategory = async (req: Request, res: Response) => {
             message: 'Categoria actualizada con éxito',
             category
         })
-    }catch(error){
+    } catch (error) {
         console.error(error);
-        res.status(500).json({ message: `Error del servidor ${error}`});
+        res.status(500).json({ message: `Error del servidor ${error}` });
     }
 }
 
@@ -79,7 +88,7 @@ export const deleteCategory = async (req: Request, res: Response) => {
     const category = await Categorys.findByPk(id);
 
     if (!category) {
-        return res.status(400).json({ message: 'No existe la categoria' });
+        return res.status(400).json({ message: `No existe un usuario con el id: ${id}` });
     }
 
     await category.update({ status: false });

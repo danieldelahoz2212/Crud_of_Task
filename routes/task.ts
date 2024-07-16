@@ -31,11 +31,6 @@ router.post('/',
 router.patch('/:id',
     [
         verifyToken(['admin','user']),
-        check('title', 'El titulo es obligatorio').notEmpty(),        
-        check('description', 'La Descripcion es obligatorio').notEmpty(),
-        check('category', 'La categoria es obligatorio').notEmpty(),
-        check('idUser', 'El apellido es obligatorio').notEmpty(),
-        check('idStatus','EL estado de la tarea es obligatorio').notEmpty()
     ],
     patchTask);
 
