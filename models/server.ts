@@ -1,8 +1,11 @@
 import express, { Application } from 'express';
+import  SwaggerUi  from 'swagger-ui-express';
+import cors from 'cors';
+
 import userRoutes from '../routes/user';
 import categoryRoutes from '../routes/category';
 import taskRoutes from '../routes/task';
-import cors from 'cors';
+import swaggerSpec from '../swagger';
 
 import db from '../db/connection';
 
@@ -12,7 +15,8 @@ class Server {
     private apiPaths = {
         users: '/api/users',
         categorys: '/api/category',
-        tasks: '/api/task'
+        tasks: '/api/task',
+        sawgger:  '/api-docs'
     }
 
     constructor() {
@@ -48,8 +52,10 @@ class Server {
     routes(){
         this.app.use(this.apiPaths.users, userRoutes),
         this.app.use(this.apiPaths.categorys, categoryRoutes),
-        this.app.use(this.apiPaths.tasks, taskRoutes)
+        this.app.use(this.apiPaths.tasks, taskRoutes),
+        this.app.use(this.apiPaths.sawgger, SwaggerUi.serve, SwaggerUi.setup(swaggerSpec))
     }
+
 
     listen() {
         this.app.listen(this.port, () => {

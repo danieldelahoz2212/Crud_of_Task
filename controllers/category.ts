@@ -78,7 +78,6 @@ export const patchCategory = async (req: Request, res: Response) => {
         })
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: `Error del servidor ${error}` });
     }
 }
 
@@ -88,7 +87,7 @@ export const deleteCategory = async (req: Request, res: Response) => {
     const category = await Categorys.findByPk(id);
 
     if (!category) {
-        return res.status(400).json({ message: `No existe un usuario con el id: ${id}` });
+        return res.status(400).json({ message: `No existe una categoria con el id: ${id}` });
     }
 
     await category.update({ status: false });

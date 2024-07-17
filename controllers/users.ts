@@ -8,7 +8,10 @@ export const getUsers = async (req: Request, res: Response) => {
 
     const users = await Users.findAll();
 
-    res.json({ users })
+    res.json({
+        messege: 'Lista de usuarios obtenida correctamente',
+        users
+    })
 };
 
 export const getUser = async (req: Request, res: Response) => {
@@ -127,16 +130,16 @@ export const login = async (req: Request, res: Response) => {
             return res.status(400).json({ message: 'Usuario o contraseña incorrectos' });
         }
 
-        const session = await Sessions.findOne({where:{idUsers: user?.getDataValue('id')}});
+        const session = await Sessions.findOne({ where: { idUsers: user?.getDataValue('id') } });
 
-        if(!session){
-            return res.status(400).json({ message: 'no se encontro el token' });
+        if (!session) {
+            return res.status(402).json({ message: 'no se encontro el token' });
         }
 
         res.json({
             message: 'Usuario logueado con éxito',
             user,
-            token: session.getDataValue( 'token' )
+            token: session.getDataValue('token')
 
         })
 
