@@ -3,6 +3,9 @@ import { validationResult } from "express-validator";
 import Users from "../models/users";
 import Sessions from "../models/sessions";
 import jwt from 'jsonwebtoken';
+import { encrypt } from "./auth";
+import { compare } from "bcrypt";
+
 
 export const getUsers = async (req: Request, res: Response) => {
 
@@ -44,7 +47,9 @@ export const postUser = async (req: Request, res: Response) => {
             return res.status(400).json({ message: 'Este correo ya está registrado' });
         }
 
-        const user = await Users.create({ name, lastName, email, password, rol });
+        const passwordHash = await encrypt(password);
+
+        const user = await Users.create({ name, lastName, email, password: passwordHash, rol });
 
         const token = jwt.sign({ Id: user.getDataValue('id'), rol: user.getDataValue('rol') }, process.env.JWT_SECRET as string);
 
@@ -58,7 +63,6 @@ export const postUser = async (req: Request, res: Response) => {
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: `Error del servidor ${error}` });
     }
 };
 
@@ -124,11 +128,13 @@ export const login = async (req: Request, res: Response) => {
 
         const { email, password } = req.body;
 
-        const user = await Users.findOne({ where: { email, password } });
+        const user = await Users.findOne({ where: { email } });
 
         if (!user) {
             return res.status(400).json({ message: 'Usuario o contraseña incorrectos' });
         }
+
+        const checkPassword = await compare(password, user.getDataValue('password'));
 
         const session = await Sessions.findOne({ where: { idUsers: user?.getDataValue('id') } });
 
@@ -136,13 +142,14 @@ export const login = async (req: Request, res: Response) => {
             return res.status(402).json({ message: 'no se encontro el token' });
         }
 
-        res.json({
-            message: 'Usuario logueado con éxito',
-            user,
-            token: session.getDataValue('token')
+        if (checkPassword) {
+            res.json({
+                message: 'Usuario logueado con éxito',
+                user,
+                token: session.getDataValue('token')
 
-        })
-
+            });
+        }
     } catch (error) {
         console.error(error);
     }

@@ -1,5 +1,5 @@
 import express, { Application } from 'express';
-import  SwaggerUi  from 'swagger-ui-express';
+import SwaggerUi from 'swagger-ui-express';
 import cors from 'cors';
 
 import userRoutes from '../routes/user';
@@ -15,8 +15,7 @@ class Server {
     private apiPaths = {
         users: '/api/users',
         categorys: '/api/category',
-        tasks: '/api/task',
-        sawgger:  '/api-docs'
+        tasks: '/api/task'
     }
 
     constructor() {
@@ -28,32 +27,33 @@ class Server {
         this.routes();
     }
 
-    async dbConnection(){
-        
+    async dbConnection() {
+
         try {
 
             await db.authenticate();
             console.log('Database online');
-        
+
         } catch (error) {
             throw new Error(error as string)
         }
     }
 
-    middlewares(){
+    middlewares() {
 
-        this.app.use( cors() );
+        this.app.use(cors());
 
-        this.app.use( express.json());
+        this.app.use(express.json());
 
-        this.app.use( express.static('public'));
+        this.app.use(SwaggerUi.serve, SwaggerUi.setup(swaggerSpec));
+
+        // this.app.use(express.static('public'));
     }
 
-    routes(){
+    routes() {
         this.app.use(this.apiPaths.users, userRoutes),
-        this.app.use(this.apiPaths.categorys, categoryRoutes),
-        this.app.use(this.apiPaths.tasks, taskRoutes),
-        this.app.use(this.apiPaths.sawgger, SwaggerUi.serve, SwaggerUi.setup(swaggerSpec))
+            this.app.use(this.apiPaths.categorys, categoryRoutes),
+            this.app.use(this.apiPaths.tasks, taskRoutes)
     }
 
 
