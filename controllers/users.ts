@@ -51,6 +51,8 @@ export const postUser = async (req: Request, res: Response) => {
 
         const user = await Users.create({ name, lastName, email, password: passwordHash, rol });
 
+        console.log(user)
+
         const token = jwt.sign({ Id: user.getDataValue('id'), rol: user.getDataValue('rol') }, process.env.JWT_SECRET as string);
 
         await Sessions.create({ token, idUsers: user.getDataValue('id') })

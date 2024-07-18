@@ -1,5 +1,4 @@
 import express, { Application } from 'express';
-import SwaggerUi from 'swagger-ui-express';
 import cors from 'cors';
 
 import userRoutes from '../routes/user';
@@ -14,9 +13,9 @@ class Server {
     private port: string;
     private apiPaths = {
         users: '/api/users',
-        categorys: '/api/category',
+        categories: '/api/category',
         tasks: '/api/task'
-    }
+    };
 
     constructor() {
         this.app = express();
@@ -28,41 +27,37 @@ class Server {
     }
 
     async dbConnection() {
-
         try {
-
             await db.authenticate();
             console.log('Database online');
-
         } catch (error) {
-            throw new Error(error as string)
+            throw new Error(error as string);
         }
     }
 
     middlewares() {
-
         this.app.use(cors());
-
         this.app.use(express.json());
 
-        this.app.use(SwaggerUi.serve, SwaggerUi.setup(swaggerSpec));
+        this.app.get('/swagger.json', (req, res) => {
+            res.setHeader('Content-Type', 'application/json');
+            res.send(swaggerSpec);
+        });
 
-        // this.app.use(express.static('public'));
+        this.app.use(express.static('public'));
     }
 
     routes() {
-        this.app.use(this.apiPaths.users, userRoutes),
-            this.app.use(this.apiPaths.categorys, categoryRoutes),
-            this.app.use(this.apiPaths.tasks, taskRoutes)
+        this.app.use(this.apiPaths.users, userRoutes);
+        this.app.use(this.apiPaths.categories, categoryRoutes);
+        this.app.use(this.apiPaths.tasks, taskRoutes);
     }
-
 
     listen() {
         this.app.listen(this.port, () => {
-            console.log(`Servidor corriendo en puerto: ${this.port}`)
+            console.log(`Servidor corriendo en puerto: ${this.port}`);
         });
     }
-
 }
 
 export default Server;

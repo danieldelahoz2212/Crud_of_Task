@@ -9,7 +9,7 @@ const options: swaggerJSDoc.Options = {
           version: '1.0.0',
         },
     },
-    apis: [`${path.join(__dirname, './routes/*')}`]
+    apis: [`${path.join(__dirname, './routes/*.ts')}`]
 }
 
 const swaggerSpec = swaggerJSDoc(options);
