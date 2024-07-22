@@ -1,10 +1,12 @@
 import express, { Application } from 'express';
 import cors from 'cors';
+import swaggerUi from 'swagger-ui-express';
 
 import userRoutes from '../routes/user';
 import categoryRoutes from '../routes/category';
 import taskRoutes from '../routes/task';
 import swaggerSpec from '../swagger';
+
 
 import db from '../db/connection';
 
@@ -14,7 +16,8 @@ class Server {
     private apiPaths = {
         users: '/api/users',
         categories: '/api/category',
-        tasks: '/api/task'
+        tasks: '/api/task',
+        swagger: '/api-docs'
     };
 
     constructor() {
@@ -44,13 +47,22 @@ class Server {
             res.send(swaggerSpec);
         });
 
-        this.app.use(express.static('public'));
+        this.app.use( express.json());
+
+        //this.app.use( express.static('public'));
     }
 
-    routes() {
+    routes(){
+        this.app.get('/',(req,res)=>{
+            console.log('test')
+           // http://localhost:8000/api-docs
+            return res.redirect(`https://localhost${this.apiPaths.swagger}`)
+         });
         this.app.use(this.apiPaths.users, userRoutes);
         this.app.use(this.apiPaths.categories, categoryRoutes);
         this.app.use(this.apiPaths.tasks, taskRoutes);
+        
+        this.app.use(this.apiPaths.swagger, swaggerUi.serve, swaggerUi.setup(swaggerSpec))
     }
 
     listen() {

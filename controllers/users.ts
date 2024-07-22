@@ -1,10 +1,12 @@
 import { Request, Response } from "express";
 import { validationResult } from "express-validator";
+import { compare } from "bcrypt";
+
 import Users from "../models/users";
 import Sessions from "../models/sessions";
 import jwt from 'jsonwebtoken';
 import { encrypt } from "./auth";
-import { compare } from "bcrypt";
+
 
 
 export const getUsers = async (req: Request, res: Response) => {
@@ -50,8 +52,6 @@ export const postUser = async (req: Request, res: Response) => {
         const passwordHash = await encrypt(password);
 
         const user = await Users.create({ name, lastName, email, password: passwordHash, rol });
-
-        console.log(user)
 
         const token = jwt.sign({ Id: user.getDataValue('id'), rol: user.getDataValue('rol') }, process.env.JWT_SECRET as string);
 
